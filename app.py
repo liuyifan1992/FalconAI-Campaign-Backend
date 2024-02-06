@@ -1,4 +1,5 @@
 import smtplib
+import urllib.parse
 
 import streamlit as st
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -8,6 +9,7 @@ from langchain.prompts import PromptTemplate
 from_email = "liuyifan19926@gmail.com"
 to_email = "yl2523@cornell.edu"
 app_password = "ttfq xmwo tsfh admx"
+link = "https://www.falcon-ai.tech/"
 
 
 def sendEmail(message):
@@ -35,6 +37,11 @@ def scheduleEmail(sendEmail, message):
     scheduler.start()
 
 
+def generateDeeplink(base_url, params):
+    deep_link = base_url + "?" + urllib.parse.urlencode(params)
+    return deep_link
+
+
 def saveResponseToFile(response, filename="email_response.txt"):
     with open(filename, "w") as file:
         file.write(response)
@@ -49,7 +56,7 @@ def readResponseFromFile(filename="email_response.txt"):
         st.error(f"File {filename} not found.")
 
 
-def getLLMResponse(form_input, email_sender, email_recipient, email_style):
+def getLLMResponse(form_input, email_sender, email_recipient, email_style, link):
     # load the Llama2 model
     llm = CTransformers(
         model="models/ggml-model-q4_0.bin",
@@ -60,14 +67,15 @@ def getLLMResponse(form_input, email_sender, email_recipient, email_style):
     # Template for building the PROMPT
     template = """
     Write an email body with {style} style and includes topic :{email_topic}.\n\nSender: {sender}\nRecipient: {recipient}
-    Remember to write just the email body not the subject.
+    Remember to write just the email body not the subject. Also, please include a hyperlink to {link}. The hyperlink should
+    be under the email text.
     \n\nEmail Text:
 
     """
 
     # Creating the final PROMPT
     prompt = PromptTemplate(
-        input_variables=["style", "email_topic", "sender", "recipient"],
+        input_variables=["style", "email_topic", "sender", "recipient", "link"],
         template=template,
     )
 
@@ -78,6 +86,7 @@ def getLLMResponse(form_input, email_sender, email_recipient, email_style):
             sender=email_sender,
             recipient=email_recipient,
             style=email_style,
+            link=link,
         )
     )
     print(response)
@@ -95,6 +104,9 @@ st.header("Generate Emails 📧")
 
 form_input = st.text_area("Enter the email topic", height=275)
 
+params = {"employer_id": "12345", "employee_id": "33445"}
+
+link = generateDeeplink(link, params)
 # Creating columns for the UI - To receive inputs from user
 col1, col2, col3 = st.columns([10, 10, 5])
 with col1:
@@ -111,7 +123,9 @@ submit = st.button("Generate")
 
 # When 'Generate' button is clicked, execute the below code
 if submit:
-    response = getLLMResponse(form_input, email_sender, email_recipient, email_style)
+    response = getLLMResponse(
+        form_input, email_sender, email_recipient, email_style, link
+    )
     st.write(response)
     saveResponseToFile(response)
 
