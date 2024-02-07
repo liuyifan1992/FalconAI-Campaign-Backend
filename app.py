@@ -1,15 +1,22 @@
+import os
 import smtplib
 import urllib.parse
 
 import streamlit as st
 from apscheduler.schedulers.background import BackgroundScheduler
+from dotenv import load_dotenv
 from langchain.llms import CTransformers
 from langchain.prompts import PromptTemplate
 
-from_email = "liuyifan19926@gmail.com"
+# Load environment variables from .env file
+load_dotenv()
+from_email = os.getenv("HOST_EMAIL")
+app_password = os.getenv("APP_PASSCODE")
+link = os.getenv("LINK")
+
+# read these parameters from user input
 to_email = "yl2523@cornell.edu"
-app_password = "ttfq xmwo tsfh admx"
-link = "https://www.falcon-ai.tech/"
+params = {"employer_id": "12345", "employee_id": "33445"}
 
 
 def sendEmail(message):
@@ -104,7 +111,6 @@ st.header("Generate Emails 📧")
 
 form_input = st.text_area("Enter the email topic", height=275)
 
-params = {"employer_id": "12345", "employee_id": "33445"}
 
 link = generateDeeplink(link, params)
 # Creating columns for the UI - To receive inputs from user
