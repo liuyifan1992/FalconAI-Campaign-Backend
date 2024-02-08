@@ -6,3 +6,7 @@ fastapi
 ipykernel
 python-box
 apscheduler
+streamlit
+watchdog
+django
+djangorestframework

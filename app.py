@@ -7,6 +7,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from dotenv import load_dotenv
 from langchain.llms import CTransformers
 from langchain.prompts import PromptTemplate
+import requests
 
 # Load environment variables from .env file
 load_dotenv()
@@ -17,10 +18,15 @@ link = os.getenv("LINK")
 # read these parameters from user input
 to_email = "yl2523@cornell.edu"
 params = {"employer_id": "12345", "employee_id": "33445"}
-
+send_email_api = 'http://127.0.0.1:8000/send/email'
 
 def sendEmail(message):
     print("sending mail...")
+    data = {'email_content': message}
+    response = requests.post(url=send_email_api, data=data)
+    if response.status_code != 200:
+        st.error("Failed to send email.", icon="🚨")
+        return
     message = f"Subject: Test email\n\n{message}"
     server = smtplib.SMTP("smtp.gmail.com", 587)
     server.starttls()
