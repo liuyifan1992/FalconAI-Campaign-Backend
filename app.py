@@ -2,12 +2,14 @@ import os
 import smtplib
 import urllib.parse
 
+import requests
+
 import streamlit as st
 from apscheduler.schedulers.background import BackgroundScheduler
+from django.http import HttpResponse
 from dotenv import load_dotenv
 from langchain.llms import CTransformers
 from langchain.prompts import PromptTemplate
-import requests
 
 # Load environment variables from .env file
 load_dotenv()
@@ -18,11 +20,14 @@ link = os.getenv("LINK")
 # read these parameters from user input
 to_email = "yl2523@cornell.edu"
 params = {"employer_id": "12345", "employee_id": "33445"}
-send_email_api = 'http://127.0.0.1:8000/send/email'
+send_email_api = "http://127.0.0.1:8000/send/email"
+generate_email_content = "http://127.0.0.1:8000/generate/email"
+store_email = "http://127.0.0.1:8000/store/email"
+
 
 def sendEmail(message):
     print("sending mail...")
-    data = {'email_content': message}
+    data = {"email_content": message}
     response = requests.post(url=send_email_api, data=data)
     if response.status_code != 200:
         st.error("Failed to send email.", icon="🚨")
@@ -55,56 +60,12 @@ def generateDeeplink(base_url, params):
     return deep_link
 
 
-def saveResponseToFile(response, filename="email_response.txt"):
-    with open(filename, "w") as file:
-        file.write(response)
-    st.success(f"Response saved to {filename}", icon="ℹ️")
-
-
 def readResponseFromFile(filename="email_response.txt"):
     try:
         with open(filename, "r") as file:
             return file.read()
     except FileNotFoundError:
         st.error(f"File {filename} not found.")
-
-
-def getLLMResponse(form_input, email_sender, email_recipient, email_style, link):
-    # load the Llama2 model
-    llm = CTransformers(
-        model="models/ggml-model-q4_0.bin",
-        model_type="llama",
-        config={"max_new_tokens": 256, "temperature": 0.01},
-    )
-
-    # Template for building the PROMPT
-    template = """
-    Write an email body with {style} style and includes topic :{email_topic}.\n\nSender: {sender}\nRecipient: {recipient}
-    Remember to write just the email body not the subject. Also, please include a hyperlink to {link}. The hyperlink should
-    be under the email text.
-    \n\nEmail Text:
-
-    """
-
-    # Creating the final PROMPT
-    prompt = PromptTemplate(
-        input_variables=["style", "email_topic", "sender", "recipient", "link"],
-        template=template,
-    )
-
-    # Generating the response using LLM
-    response = llm(
-        prompt.format(
-            email_topic=form_input,
-            sender=email_sender,
-            recipient=email_recipient,
-            style=email_style,
-            link=link,
-        )
-    )
-    print(response)
-
-    return response
 
 
 st.set_page_config(
@@ -116,7 +77,6 @@ st.set_page_config(
 st.header("Generate Emails 📧")
 
 form_input = st.text_area("Enter the email topic", height=275)
-
 
 link = generateDeeplink(link, params)
 # Creating columns for the UI - To receive inputs from user
@@ -135,11 +95,22 @@ submit = st.button("Generate")
 
 # When 'Generate' button is clicked, execute the below code
 if submit:
-    response = getLLMResponse(
-        form_input, email_sender, email_recipient, email_style, link
-    )
-    st.write(response)
-    saveResponseToFile(response)
+    params = {
+        "form_input": form_input,
+        "email_sender": email_sender,
+        "email_recipient": email_recipient,
+        "email_style": email_style,
+        "link": link,
+    }
+    response = requests.get(url=generate_email_content, params=params)
+    email_content = response.content.decode("utf-8")
+    st.write(email_content)
+    data = {"email_content": email_content}
+    response = requests.post(url=store_email, data=data)
+    if response.status_code != 200:
+        st.error("Failed to send email.", icon="🚨")
+    filename="email_response.txt"
+    st.success(f"Response saved to {filename}", icon="ℹ️")
 
 send_email = st.button("Send Email")
 
@@ -147,5 +118,10 @@ if send_email:
     saved_response = readResponseFromFile()
     if saved_response:
         st.info("Sending Email...", icon="ℹ️")
+        # data = {"email_content": saved_response}
+        # response = requests.post(url=send_email_api, data=data)
+        # if response.status_code != 200:
+        #     st.error("Failed to send email.", icon="🚨")
+        # st.success("Email Sent.", icon="ℹ️")
         sendEmail(saved_response)
         # scheduleEmail(sendEmail, saved_response)

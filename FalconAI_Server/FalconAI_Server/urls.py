@@ -18,7 +18,9 @@ from django.urls import path
 from email_generator import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path("admin/", admin.site.urls),
     path("", views.index, name="index"),
-    path('send/email', views.sendEmail, name="send email")
+    path("send/email", views.sendEmail, name="send email"),
+    path("generate/email", views.generateEmail, name="generate email"),
+    path("store/email", views.storeEmail, name="store email"),
 ]
