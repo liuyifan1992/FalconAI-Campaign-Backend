@@ -110,3 +110,23 @@ class AIEmail(models.Model):
 
     def __str__(self):
         return self.email_id
+
+
+class EmployeeAction(models.Model):
+    class Action(models.IntegerChoices):
+        CLICK = 0
+        VIEW = 1
+
+    action_id = models.CharField(max_length=100, null=False, primary_key=True)
+    # change it to non-nullable after Employee creation backend completed
+    employee = models.ForeignKey(Employee, null=True, on_delete=models.CASCADE)
+    email = models.ForeignKey(AIEmail, null=True, on_delete=models.CASCADE)
+    action = models.IntegerField(
+        verbose_name="action",
+        choices=Action.choices,
+        default=Action.CLICK,
+        null=True,
+    )
+
+    def __str__(self):
+        return self.action_id

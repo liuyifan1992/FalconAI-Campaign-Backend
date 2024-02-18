@@ -8,7 +8,7 @@ import requests
 from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from dotenv import load_dotenv
-from email_generator.models import AIEmail
+from email_generator.models import AIEmail, EmployeeAction
 from langchain.llms import CTransformers
 from langchain.prompts import PromptTemplate
 
@@ -43,7 +43,6 @@ def sendEmail(request):
 @csrf_exempt
 def scheduleEmail(request):
     if request.method == "POST" and "email_content" in request.POST:
-        # Process other email data here
         email_content = request.POST["email_content"]
         genScheduleEmail(genSendEmail, email_content)
         return HttpResponse("Email sent successfully")
@@ -52,14 +51,26 @@ def scheduleEmail(request):
 
 
 @csrf_exempt
+def clickEmail(request):
+    if request.method == "POST":
+        # Process email click
+        employee_id = request.POST["employee_id"]
+        email_id = request.POST["email_id"]
+        employeeAction = EmployeeAction(action_id=uuid.uuid4())
+        # employeeAction.save()
+        return HttpResponse("Email sent successfully")
+    else:
+        raise HttpResponseBadRequest
+
+
+@csrf_exempt
 def storeEmail(request):
     if request.method == "POST" and "email_content" in request.POST:
-        # Process other email data here
         email_content = request.POST["email_content"]
         # deprecate this once the DB set up is ready
         saveResponseToFile(email_content)
         email = AIEmail(email_id=uuid.uuid4(), email_content=email_content)
-        email.save()
+        # email.save()
         return JsonResponse({"email_content": email_content}, status=200)
     else:
         raise HttpResponseBadRequest
