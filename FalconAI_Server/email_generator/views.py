@@ -92,9 +92,27 @@ def generateEmail(request):
         raise HttpResponseBadRequest
 
 
+@csrf_exempt
+def fetchEmail(request):
+    if request.method == "GET":
+        email_content = readResponseFromFile("email_response.txt")
+        return HttpResponse(email_content)
+    else:
+        raise HttpResponseBadRequest
+
+
 def saveResponseToFile(response, filename="email_response.txt"):
     with open(filename, "w") as file:
         file.write(response)
+
+
+def readResponseFromFile(filename="email_response.txt"):
+    try:
+        with open(filename, "r") as file:
+            content = file.read()
+            return content
+    except FileNotFoundError:
+        print("Error reading the file")
 
 
 @csrf_exempt

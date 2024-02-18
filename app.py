@@ -11,14 +11,7 @@ from django.http import HttpResponse
 send_email_api = "http://127.0.0.1:8000/send/email"
 generate_email_content = "http://127.0.0.1:8000/generate/email"
 store_email = "http://127.0.0.1:8000/store/email"
-
-
-def readResponseFromFile(filename="email_response.txt"):
-    try:
-        with open(filename, "r") as file:
-            return file.read()
-    except FileNotFoundError:
-        st.error(f"File {filename} not found.")
+fetch_email = "http://127.0.0.1:8000/fetch/email"
 
 
 st.set_page_config(
@@ -66,7 +59,9 @@ if submit:
 send_email = st.button("Send Email")
 
 if send_email:
-    saved_response = readResponseFromFile()
+    response = requests.get(url=fetch_email)
+    saved_response = response.content.decode("utf-8")
+    st.write(saved_response)
     if saved_response:
         st.info("Sending Email...", icon="ℹ️")
         data = {"email_content": saved_response}
