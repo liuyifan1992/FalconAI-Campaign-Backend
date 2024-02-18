@@ -1,12 +1,14 @@
 import os
 import smtplib
 import urllib.parse
+import uuid
 
 import requests
 
 from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from dotenv import load_dotenv
+from email_generator.models import AIEmail
 from langchain.llms import CTransformers
 from langchain.prompts import PromptTemplate
 
@@ -54,7 +56,10 @@ def storeEmail(request):
     if request.method == "POST" and "email_content" in request.POST:
         # Process other email data here
         email_content = request.POST["email_content"]
+        # deprecate this once the DB set up is ready
         saveResponseToFile(email_content)
+        email = AIEmail(email_id=uuid.uuid4(), email_content=email_content)
+        email.save()
         return JsonResponse({"email_content": email_content}, status=200)
     else:
         raise HttpResponseBadRequest
