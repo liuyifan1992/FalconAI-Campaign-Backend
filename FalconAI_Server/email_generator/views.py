@@ -166,3 +166,24 @@ def createBusiness(request):
         return HttpResponse("Business created successfully!")
     else:
         raise HttpResponseBadRequest
+
+
+@csrf_exempt
+def createAdmin(request):
+    if request.method == "POST":
+        username = request.POST["username"]
+        email = request.POST["email"]
+        first_name = request.POST["first_name"]
+        last_name = request.POST["last_name"]
+        is_admin = true
+        admin = FlaconAIUser(
+            username=username,
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            is_admin=is_admin,
+        )
+        admin.save()
+        return HttpResponse("Admin created successfully!")
+    else:
+        raise HttpResponseBadRequest

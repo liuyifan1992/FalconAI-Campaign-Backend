@@ -28,4 +28,5 @@ urlpatterns = [
     path("click/email", views.clickEmail, name="Click email"),
     path("create/employee", views.createEmployee, name="Create Employee"),
     path("create/business", views.createBusiness, name="Create Business"),
+    path("create/admin", views.createAdmin, name="Create Admin"),
 ]
