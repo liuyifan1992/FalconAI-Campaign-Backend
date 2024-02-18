@@ -8,7 +8,7 @@ import requests
 from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from dotenv import load_dotenv
-from email_generator.models import AIEmail, EmployeeAction
+from email_generator.models import AIEmail, Business, Employee, EmployeeAction
 from langchain.llms import CTransformers
 from langchain.prompts import PromptTemplate
 
@@ -163,3 +163,40 @@ def getLLMResponse(form_input, email_sender, email_recipient, email_style, link)
 def generateDeeplink(base_url, params):
     deep_link = base_url + "?" + urllib.parse.urlencode(params)
     return deep_link
+
+
+@csrf_exempt
+def createEmployee(request):
+    if request.method == "POST" and "business_id" in request.POST:
+        business_id = request.POST["business_id"]
+        business = Business.objects.get(business_id=business_id)
+        email = request.POST["email"]
+        first_name = request.POST["first_name"]
+        last_name = request.POST["last_name"]
+        employee_id = uuid.uuid4()
+        employee = Employee(
+            employee_id=employee_id,
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            business=business,
+        )
+        employee.save()
+        return HttpResponse("Employee created successfully!")
+    else:
+        raise HttpResponseBadRequest
+
+
+@csrf_exempt
+def createBusiness(request):
+    if request.method == "POST":
+        business_id = uuid.uuid4()
+        name = request.POST["name"]
+        business = Business(
+            business_id=business_id,
+            name=name,
+        )
+        business.save()
+        return HttpResponse("Business created successfully!")
+    else:
+        raise HttpResponseBadRequest

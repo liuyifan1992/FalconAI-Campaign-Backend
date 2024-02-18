@@ -25,4 +25,6 @@ urlpatterns = [
     path("store/email", views.storeEmail, name="store email"),
     path("schedule/email", views.scheduleEmail, name="schedule email"),
     path("click/email", views.clickEmail, name="Click email"),
+    path("create/employee", views.createEmployee, name="Create Employee"),
+    path("create/business", views.createBusiness, name="Create Business"),
 ]
