@@ -1,6 +1,5 @@
 import os
 import smtplib
-import urllib.parse
 import uuid
 
 import requests
@@ -12,6 +11,12 @@ from email_generator.models import AIEmail, Business, Employee, EmployeeAction
 from langchain.llms import CTransformers
 from langchain.prompts import PromptTemplate
 
+from .utils import (
+    generateDeeplink,
+    getLLMResponse,
+    readResponseFromFile,
+    saveResponseToFile,
+)
 
 # from models import AIEmail
 
@@ -101,20 +106,6 @@ def fetchEmail(request):
         raise HttpResponseBadRequest
 
 
-def saveResponseToFile(response, filename="email_response.txt"):
-    with open(filename, "w") as file:
-        file.write(response)
-
-
-def readResponseFromFile(filename="email_response.txt"):
-    try:
-        with open(filename, "r") as file:
-            content = file.read()
-            return content
-    except FileNotFoundError:
-        print("Error reading the file")
-
-
 @csrf_exempt
 def genSendEmail(message):
     message = f"Subject: Test email\n\n{message}"
@@ -138,49 +129,6 @@ def genScheduleEmail(sendEmail, message):
     print(f"Job ID: {job_id}")
     # Start the scheduler
     scheduler.start()
-
-
-def getLLMResponse(form_input, email_sender, email_recipient, email_style, link):
-    # load the Llama2 model
-    llm = CTransformers(
-        model="models/ggml-model-q4_0.bin",
-        model_type="llama",
-        config={"max_new_tokens": 256, "temperature": 0.01},
-    )
-
-    # Template for building the PROMPT
-    template = """
-    Write an email body with {style} style and includes topic :{email_topic}.\n\nSender: {sender}\nRecipient: {recipient}
-    Remember to write just the email body not the subject. Also, please include a hyperlink to {link}. The hyperlink should
-    be embedded in text.
-    \n\nEmail Text:
-
-    """
-
-    # Creating the final PROMPT
-    prompt = PromptTemplate(
-        input_variables=["style", "email_topic", "sender", "recipient", "link"],
-        template=template,
-    )
-
-    # Generating the response using LLM
-    response = llm(
-        prompt.format(
-            email_topic=form_input,
-            sender=email_sender,
-            recipient=email_recipient,
-            style=email_style,
-            link=link,
-        )
-    )
-    print(response)
-
-    return response
-
-
-def generateDeeplink(base_url, params):
-    deep_link = base_url + "?" + urllib.parse.urlencode(params)
-    return deep_link
 
 
 @csrf_exempt
