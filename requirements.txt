@@ -10,3 +10,4 @@ streamlit
 watchdog
 django
 djangorestframework
+python-dotenv

@@ -23,4 +23,5 @@ urlpatterns = [
     path("send/email", views.sendEmail, name="send email"),
     path("generate/email", views.generateEmail, name="generate email"),
     path("store/email", views.storeEmail, name="store email"),
+    path("schedule/email", views.scheduleEmail, name="schedule email"),
 ]
