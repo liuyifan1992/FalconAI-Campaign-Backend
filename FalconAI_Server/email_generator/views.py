@@ -27,7 +27,7 @@ app_password = os.getenv("APP_PASSCODE")
 
 to_email = "yl2523@cornell.edu"
 # read these parameters from user input
-params = {"employer_id": "12345", "employee_id": "33445"}
+params = {"email_id": "11111", "employee_id": "33445"}
 
 
 def index(request):
@@ -57,13 +57,13 @@ def scheduleEmail(request):
 
 @csrf_exempt
 def clickEmail(request):
-    if request.method == "POST":
+    if request.method == "GET":
         # Process email click
-        employee_id = request.POST["employee_id"]
-        email_id = request.POST["email_id"]
+        employee_id = request.GET.get("employee_id")
+        email_id = request.GET.get("email_id")
         employeeAction = EmployeeAction(action_id=uuid.uuid4())
-        # employeeAction.save()
-        return HttpResponse("Email sent successfully")
+        employeeAction.save()
+        return HttpResponse("YOU are fucking stupid!")
     else:
         raise HttpResponseBadRequest
 
