@@ -11,3 +11,4 @@ watchdog
 django
 djangorestframework
 python-dotenv
+psycopg2-binary
