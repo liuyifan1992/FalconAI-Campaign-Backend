@@ -1,6 +1,7 @@
 import os
 import smtplib
 import urllib.parse
+import uuid
 
 import requests
 
@@ -12,6 +13,8 @@ send_email_api = "http://127.0.0.1:8000/send/email"
 generate_email_content = "http://127.0.0.1:8000/generate/email"
 store_email = "http://127.0.0.1:8000/store/email"
 fetch_email = "http://127.0.0.1:8000/fetch/email"
+# don't use this email id
+email_id = "abcd_edfe888_ryan_rocks"
 
 
 st.set_page_config(
@@ -37,6 +40,7 @@ with col3:
 
 
 submit = st.button("Generate")
+# email_id = uuid.uuid4()
 
 # When 'Generate' button is clicked, execute the below code
 if submit:
@@ -49,7 +53,7 @@ if submit:
     response = requests.get(url=generate_email_content, params=params)
     email_content = response.content.decode("utf-8")
     st.write(email_content)
-    data = {"email_content": email_content}
+    data = {"email_content": email_content, "email_id": email_id}
     response = requests.post(url=store_email, data=data)
     if response.status_code != 200:
         st.error("Failed to send email.", icon="🚨")
@@ -59,7 +63,10 @@ if submit:
 send_email = st.button("Send Email")
 
 if send_email:
-    response = requests.get(url=fetch_email)
+    params = {
+        "email_id": email_id,
+    }
+    response = requests.get(url=fetch_email, params=params)
     saved_response = response.content.decode("utf-8")
     st.write(saved_response)
     if saved_response:

@@ -14,8 +14,8 @@ from langchain.prompts import PromptTemplate
 from .utils import (
     generateDeeplink,
     getLLMResponse,
-    readResponseFromFile,
-    saveResponseToFile,
+    # readResponseFromFile,
+    # saveResponseToFile,
 )
 
 # from models import AIEmail
@@ -72,10 +72,11 @@ def clickEmail(request):
 def storeEmail(request):
     if request.method == "POST" and "email_content" in request.POST:
         email_content = request.POST["email_content"]
+        email_id = request.POST["email_id"]
         # deprecate this once the DB set up is ready
-        saveResponseToFile(email_content)
-        email = AIEmail(email_id=uuid.uuid4(), email_content=email_content)
-        # email.save()
+        # saveResponseToFile(email_content)
+        email = AIEmail(email_id=email_id, email_content=email_content)
+        email.save()
         return JsonResponse({"email_content": email_content}, status=200)
     else:
         raise HttpResponseBadRequest
@@ -100,7 +101,15 @@ def generateEmail(request):
 @csrf_exempt
 def fetchEmail(request):
     if request.method == "GET":
-        email_content = readResponseFromFile("email_response.txt")
+        email_id = request.GET.get("email_id")
+        print(email_id)
+        try:
+            email = AIEmail.objects.get(email_id=email_id)
+        except ObjectDoesNotExist:
+            return HttpResponseBadRequest
+        email_content = email.email_content
+        print(email_content)
+        # email_content = readResponseFromFile("email_response.txt")
         return HttpResponse(email_content)
     else:
         raise HttpResponseBadRequest

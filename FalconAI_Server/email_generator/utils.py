@@ -9,18 +9,18 @@ def generateDeeplink(base_url, params):
     return deep_link
 
 
-def saveResponseToFile(response, filename="email_response.txt"):
-    with open(filename, "w") as file:
-        file.write(response)
+# def saveResponseToFile(response, filename="email_response.txt"):
+#     with open(filename, "w") as file:
+#         file.write(response)
 
 
-def readResponseFromFile(filename="email_response.txt"):
-    try:
-        with open(filename, "r") as file:
-            content = file.read()
-            return content
-    except FileNotFoundError:
-        print("Error reading the file")
+# def readResponseFromFile(filename="email_response.txt"):
+#     try:
+#         with open(filename, "r") as file:
+#             content = file.read()
+#             return content
+#     except FileNotFoundError:
+#         print("Error reading the file")
 
 
 def getLLMResponse(form_input, email_sender, email_recipient, email_style, link):
